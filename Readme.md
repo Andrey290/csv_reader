@@ -1,20 +1,5 @@
 # Инструкция по компиляции и запуску
 Эта программа полностью соответствует техническому заданию. 
-Она содержит следующую структуру:
-.
-├── CMakeLists.txt
-├── include
-│   ├── computations.h
-│   ├── config.h
-│   └── parsing.h
-├── Readme.md
-├── src
-│   ├── computations.c
-│   ├── main.c
-│   └── parsing.c
-├── test.csv
-└── tests
-    └── csvreader_gtest.cpp
 В текущей версии реализована 
 - обработка .csv файла
 - вывод в терминал

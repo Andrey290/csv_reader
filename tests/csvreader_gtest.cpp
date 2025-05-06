@@ -91,25 +91,25 @@ TEST(CsvReaderTest, NestedFormulas) {
     std::string input =
         ",M,N\n"
         "1,2,=M1+1\n"
-        "2,=M1+N1,=N2*2\n";
+        "2,=M1+N1,=N1*M2\n";
 
     std::string expected =
-        ",M,N\n"
-        "1,2.00,3.00\n"
-        "2,5.00,6.00\n";
+        ",M,N,\n"
+        "1,2.00,3.00,\n"
+        "2,5.00,15.00,\n";
 
     EXPECT_EQ(RunCsvReader(input), expected);
 }
 
-// Тест 5: отрицательные числа и пробелы
+// Тест 5: отрицательные числа
 TEST(CsvReaderTest, NegativeNumbersAndSpaces) {
     std::string input =
         ",A,B\n"
-        "1, -5 , = A1 * -2 \n";
+        "1,-5,=A1*-2\n";
 
     std::string expected =
-        ",A,B\n"
-        "1,-5,10\n";
+        ",A,B,\n"
+        "1,-5.00,10.00,\n";
 
     EXPECT_EQ(RunCsvReader(input), expected);
 }

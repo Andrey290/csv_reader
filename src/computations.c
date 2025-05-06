@@ -58,11 +58,13 @@ int calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper
 	char   argument_one[MAX_LINE_SIZE  +  32];
 	char   argument_one_letters[  MAX_LINE_SIZE ];
 	char   argument_one_numbers[32];
+	int    argument_one_sign = 1;
 	double argument_one_value = 0;
 
 	char   argument_two[MAX_LINE_SIZE  +  32];
 	char   argument_two_letters[  MAX_LINE_SIZE ];
 	char   argument_two_numbers[32];
+	int    argument_two_sign = 1;
 	double argument_two_value = 0;
 	
 	char operator;
@@ -75,10 +77,24 @@ int calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper
 	int writing_index = 0;
 	for (int i = 1; ; i++) {
 		if (processed_cell->formula[i] == '+' || processed_cell->formula[i] == '-' || processed_cell->formula[i] == '*' || processed_cell->formula[i] == '/') {
-			operator = processed_cell->formula[i];
-			operator_flag++;
-			argument_one[writing_index] = '\0';
-			writing_index = 0;
+			if (processed_cell->formula[i] == '-') {
+				if (i == 1) {
+					argument_one_sign *= -1;
+				}
+				if (operator_flag && !writing_index) {
+					argument_two_sign *= -1;
+				}  else {
+				operator = processed_cell->formula[i];
+				operator_flag++;
+				argument_one[writing_index] = '\0';
+				writing_index = 0;
+				}
+			} else {
+				operator = processed_cell->formula[i];
+				operator_flag++;
+				argument_one[writing_index] = '\0';
+				writing_index = 0;
+			}
 		} else if (processed_cell->formula[i] == '\0' || processed_cell->formula[i] == '\n') {
 			if (!operator_flag) {
 				argument_one[writing_index] = '\0';
@@ -164,6 +180,10 @@ int calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper
 	//printf("\n||||||||\n");
 	//printf("[INFO] calculate : argument_one_value %f.\n", argument_one_value);
 	//printf("[INFO] calculate : argument_two_value %f.\n", argument_two_value);
+	
+	argument_one_value *= argument_one_sign;
+	argument_two_value *= argument_two_sign;
+
 	switch (operator) {
 		case '+': processed_cell->value = argument_one_value + argument_two_value; /*printf("+\n");*/ break;
 		case '-': processed_cell->value = argument_one_value - argument_two_value; /*printf("-\n");*/ break;

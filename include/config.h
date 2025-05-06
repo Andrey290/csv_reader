@@ -16,7 +16,7 @@
 //---CONSTANTS---//
 
 #define MAX_LINE_SIZE 1024
-#define DIV_ZERO_EPS 1e-3
+#define DIV_ZERO_EPS 1e-9
 
 //---STRUCTURES---//
 

@@ -29,7 +29,7 @@ int print_grid(Cell **grid, ColumnsKeeper *cols, RowsKeeper *rows) {
 				int calc_error = calculate(&grid[i][j], grid, cols, rows);
 				if(!calc_error) {
 					printf("%.2f,", grid[i][j].value);
-				} else if (calc_error == 680){  // DIVISION BY ZERO
+				} else {  // DIVISION BY ZERO
 					grid[i][j].value = NAN; // Not A Number is mean
 					grid[i][j].is_resolved = 1;
 					printf("ERROR,");
@@ -115,11 +115,16 @@ int calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper
 	//printf("[INFO] calculate : arg one letters after%s\n", argument_one_letters);
 	//printf("[INFO] calculate : arg one numbers after%s\n", argument_one_numbers);
 
-	if (just_a_number_flag) {
+	if (atoi(argument_one)) {
 		//printf("IT IS JUST A NUMBER!!!\n");
-		argument_one_value = (double)atoi(argument_one_numbers);
+		argument_one_value = atof(argument_one);
 	} else {
-		Cell *target_cell = find_cell(argument_one_letters, argument_one_numbers, cols, rows, grid);
+
+		int find_error = 0;
+		Cell *target_cell = find_cell(&find_error, argument_one_letters, argument_one_numbers, cols, rows, grid);
+		if (find_error) {
+			return 1;
+		}
 		//printf("[INFO] calculate/founded_cell : target_cell (%s%s) formula is : %s.\n", argument_one_letters, argument_one_numbers, target_cell->formula);	
 		if (target_cell->is_resolved) {
 			argument_one_value = target_cell->value;
@@ -135,10 +140,15 @@ int calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper
 	
 	geting_row_and_col_separately(&just_a_number_flag, argument_two_letters, argument_two_numbers, argument_two);
 	
-	if (just_a_number_flag) {
-		argument_two_value = (double)atoi(argument_two_numbers);
+	if (atoi(argument_two)) {
+		argument_two_value = atof(argument_two);
 	} else {
-		Cell *target_cell = find_cell(argument_two_letters, argument_two_numbers, cols, rows, grid);
+
+		int find_error = 0;
+		Cell *target_cell = find_cell(&find_error, argument_two_letters, argument_two_numbers, cols, rows, grid);
+		if (find_error) {
+			return 2;
+		}
 		//printf("[INFO] calculate/founded_cell : target_cell (%s%s) formula is : %s.\n",argument_two_letters, argument_two_numbers, target_cell->formula);	
 		if (target_cell->is_resolved) {
 			argument_two_value = target_cell->value;
@@ -158,12 +168,11 @@ int calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper
 		case '+': processed_cell->value = argument_one_value + argument_two_value; /*printf("+\n");*/ break;
 		case '-': processed_cell->value = argument_one_value - argument_two_value; /*printf("-\n");*/ break;
 		case '*': processed_cell->value = argument_one_value * argument_two_value; /*printf("*\n");*/ break;
-		case '/': 
-			  if (fabs(argument_two_value) < DIV_ZERO_EPS) {
+		case '/':
+			  //printf("\n %f\n", argument_two_value); 
+			  if (fabs(argument_two_value) <= DIV_ZERO_EPS) {
 				  //printf("[FAULT] calculate : Operator is bad.\n")
-				  processed_cell->value = NAN;
-				  processed_cell->is_resolved = 1;
-				  return 680; // 6 - division, 8 - by, 0 - zero
+				  return 3;
 			  }
 		          processed_cell->value = argument_one_value / argument_two_value;
 			  /*printf("/\n");*/
@@ -224,22 +233,32 @@ int geting_row_and_col_separately(int *just_a_number_flag, char *argument_letter
 	return 0;
 }
 
-Cell* find_cell(char* argument_letters, char* argument_numbers, ColumnsKeeper *cols, RowsKeeper *rows, Cell **grid) {
-		int integer_argument_numbers = atoi(argument_numbers);
-	        // FIND ROW (Later there should be binary searching)
-		int target_row = 0;
-		for (int i = 0; i < rows->count; i++) {
-			if (rows->ids[i] == integer_argument_numbers) {
-				target_row = i;
-			}
+Cell*  find_cell(int *find_error, char* argument_letters, char* argument_numbers, ColumnsKeeper *cols, RowsKeeper *rows, Cell **grid) {
+	int integer_argument_numbers = atoi(argument_numbers);
+	// FIND ROW (Later there should be binary searching)
+	int target_row = -1;
+	for (int i = 0; i < rows->count; i++) {
+		if (rows->ids[i] == integer_argument_numbers) {
+			target_row = i;
 		}
+	}
+	if (target_row == -1) {
+		*find_error = 1;
+	//	return 1;
+	}
 	
-		// FIND COL
-		int target_col = 0;
-		for (int i = 0; i < cols->count; i++) {
-			if (strcmp(cols->names[i], argument_letters) == 0) {
-				target_col = i;
-			}
+	// FIND COL
+	int target_col = -1;
+	for (int i = 0; i < cols->count; i++) {
+		if (strcmp(cols->names[i], argument_letters) == 0) {
+			target_col = i;
 		}
+	}
+	if (target_col == -1) {
+		*find_error = 2;
+	//	return 2;
+	}
+	//find_cell = &grid[target_row][target_col];
+	//return 0;
 	return &grid[target_row][target_col];
 }

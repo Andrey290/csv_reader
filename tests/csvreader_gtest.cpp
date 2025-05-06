@@ -56,7 +56,7 @@ TEST(CsvReaderTest, DivisionByZero) {
     std::string input =
         ",X,Y\n"
         "1,10,=X1-10\n"
-        "2,5,=X1-10/0\n"; // второй рядка имеет деление на ноль
+        "2,5,=X2/Y1\n"; // второй рядка имеет деление на ноль
     
     std::string expected =
         ",X,Y,\n"
@@ -75,9 +75,15 @@ TEST(CsvReaderTest, InvalidColumnReference) {
     std::string input =
         ",A,B\n"
         "1,3,=C1+1\n"; // ссылка на C1 несуществует
+    
+    std::string expected =
+        ",A,B,\n"
+        "1,3.00,ERROR,\n";
 
-    std::string output = RunCsvReader(input);
-    EXPECT_NE(output.find("ERROR"), std::string::npos);
+    EXPECT_EQ(RunCsvReader(input), expected);
+
+    //std::string output = RunCsvReader(input);
+    //EXPECT_NE(output.find("ERROR"), std::string::npos);
 }
 
 // Тест 4: вложенные формулы
@@ -89,8 +95,8 @@ TEST(CsvReaderTest, NestedFormulas) {
 
     std::string expected =
         ",M,N\n"
-        "1,2,3\n"
-        "2,5,6\n";
+        "1,2.00,3.00\n"
+        "2,5.00,6.00\n";
 
     EXPECT_EQ(RunCsvReader(input), expected);
 }

@@ -3,11 +3,12 @@
 
    =^0w0^=
    1) This is the first version in which everything works in accordance with technical requirement.
-   2) [INFO] outputs are still not deleted.
-   3) !No sorting. 
-   4) !Searching is brutforce.
-   5) !Code may crush on errors.
-   6) !Crushes are not heap-safety.
+   2) !No sorting. 
+   3) !Searching is brutforce.
+   4) !Code may crush on errors.
+   5) !Crushes are not heap-safety.
+   6) Some decisions are bad
+   7) Output is nice =}
 
 */
 
@@ -51,7 +52,7 @@ int           parse_csv(Cell **grid, ColumnsKeeper *cols, RowsKeeper *rows, FILE
 int           print_grid(Cell **grid, ColumnsKeeper *cols, RowsKeeper *rows);
 int           calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper *rows);
 int           geting_row_and_col_separately(int *just_a_number_flag, char *argument_letters, char *argument_numbers, char *argument);
-Cell* find_cell(char* argument_letters, char* argument_numbers, ColumnsKeeper *cols, RowsKeeper *rows, Cell **grid);
+Cell*         find_cell(char* argument_letters, char* argument_numbers, ColumnsKeeper *cols, RowsKeeper *rows, Cell **grid);
 
 
 int main(int argc, char *argv[]) {
@@ -83,13 +84,13 @@ int main(int argc, char *argv[]) {
 		fclose(csv_file);
 		return 3;
 	}
-	printf("[INFO] main : Finally %d cols\n", columns.count);
+	//printf("[INFO] main : Finally %d cols\n", columns.count);
 
 	// GET ROWS //
 
 	RowsKeeper rows = count_rows(csv_file);
 	    // !!! Add zero rows check
-	printf("[INFO] main : Finally %d rows\n", rows.count);
+	//printf("[INFO] main : Finally %d rows\n", rows.count);
 
 	// PARSE DATA //
 	
@@ -104,25 +105,23 @@ int main(int argc, char *argv[]) {
 		printf("[FAULT] main : Unsuccessfull parsing.\n");
 		return 4;
 	} else {
-		printf("[INFO] main : Successfull parsing!\n");
+		//printf("[INFO] main : Successfull parsing!\n");
 	}
 	    /*------------------------------------------//
 	    | Here should be FAST SORTING of ROW and COL |
 	    //------------------------------------------*/
 
-	    // Print grid (Printing is also calculating formulas, so programm can stack right here)
+	    // Print grid (Printing is also calculating formulas, so programm can stack right here if there are many layers)
 	if(print_grid(grid, &columns, &rows)) {
         	printf("[FAULT] main : Printing error.\n");
 		return 5;
 	} else {
-		printf("[INFO] main : Printing succeded! So all John Goodenough in this code!.\n");
+		//printf("[INFO] main : Printing succeded! So all John Goodenough in this code!.\n");
 	}
 
-	// DO NOT NEED CSV_FILE ANYMORE //
+	// ENDING //
 
 	fclose(csv_file);
-	
-	// ENDING //
 
 	for (int i = 0; i < rows.count; i++) {
 		for (int j = 0; j < columns.count; j++) {
@@ -164,7 +163,7 @@ ColumnsKeeper count_columns(FILE *csv_file) {
 		if (header_line[i] == '\n' || header_line[i] == '\0') break;
 	}
 	columns.count = cols;
-	printf("[INFO] count_columns : Finally %d cols\n", columns.count);
+	//printf("[INFO] count_columns : Finally %d cols\n", columns.count);
 	
 	// Filling structure
 	columns.names = (char**)malloc(columns.count * sizeof(char*));
@@ -189,10 +188,11 @@ ColumnsKeeper count_columns(FILE *csv_file) {
 		}
 		if (header_line[i] == '\n' || header_line[i] == '\0') break;
 	}
-	
+	/*
 	for (int i = 0; i < columns.count; i++) {
 		printf("[INFO] count_columns : Columns number %d name is %s\n", i, columns.names[i]);
 	}
+	*/
 	return columns;
 }
 
@@ -208,7 +208,7 @@ RowsKeeper count_rows(FILE *csv_file) {
 		c_rows++;	
 	}
         rewind(csv_file); // return pointer
-        printf("[INFO] count_rows : There are %d rows in file (exluded header line). \n", c_rows);
+        //printf("[INFO] count_rows : There are %d rows in file (exluded header line). \n", c_rows);
 	rows.count = c_rows;
 
 	// Filling
@@ -231,7 +231,7 @@ RowsKeeper count_rows(FILE *csv_file) {
 			rows.ids[c_rows - 1] = id; 
 			rows.sorted_ids_pointers[c_rows - 1] = &rows.ids[c_rows - 1];
 
-			printf("[INFO] count_rows : Row number %d has id %d. \n", c_rows, rows.ids[c_rows - 1]);
+			//printf("[INFO] count_rows : Row number %d has id %d. \n", c_rows, rows.ids[c_rows - 1]);
 			c_rows++;	
 		} else {
 			c_rows++;
@@ -264,7 +264,7 @@ int parse_csv(Cell **grid, ColumnsKeeper *cols, RowsKeeper *rows, FILE *file) {
 					&line[name_start],
 					name_len);
 				grid[row][current_col].formula[name_len] = '\0';
-				printf("[INFO] parse_csv : Cell[%d][%d] formula is : %s\n", row, current_col, grid[row][current_col].formula);	
+				//printf("[INFO] parse_csv : Cell[%d][%d] formula is : %s\n", row, current_col, grid[row][current_col].formula);	
 				name_start = i + 1;
 				current_col++;
 			}
@@ -274,15 +274,21 @@ int parse_csv(Cell **grid, ColumnsKeeper *cols, RowsKeeper *rows, FILE *file) {
 }
 
 int print_grid(Cell **grid, ColumnsKeeper *cols, RowsKeeper *rows) {
-	printf("[INFO] print_grid : Grid is:\n");
-	for(int i = 0; i < rows->count; i++) {
+	//printf("[INFO] print_grid : Grid is:\n");
+	printf(",");
+	for (int i = 0; i < cols->count; i++) {
+		printf("%s,", cols->names[i]);
+	}
+	printf("\n");
+	for (int i = 0; i < rows->count; i++) {
+		printf("%d,", rows->ids[i]);
 		for (int j = 0; j < cols->count; j++) {
 			if (grid[i][j].formula[0] != '=') {
 				grid[i][j].value = atof(grid[i][j].formula);
 				grid[i][j].is_resolved = 1;
 				printf("%.2f,", grid[i][j].value);
 			} else {
-				printf("[INFO] print_grid : if(!calculate(&grid[%d][%d], grid, cols, rows)).\n", i, j);
+				//printf("[INFO] print_grid : if(!calculate(&grid[%d][%d], grid, cols, rows)).\n", i, j);
 				if(!calculate(&grid[i][j], grid, cols, rows)) {
 					printf("%.2f,", grid[i][j].value);
 				} else {
@@ -299,8 +305,9 @@ int print_grid(Cell **grid, ColumnsKeeper *cols, RowsKeeper *rows) {
 
 
 int calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper *rows) {
-	printf("[INFO] calculate : Entered into caluculate with %s.\n", processed_cell->formula);	
+	//printf("[INFO] calculate : Entered into caluculate with %s.\n", processed_cell->formula);	
 	
+	// It IS a bad solution. I will refactor it.
 	if (isdigit(processed_cell->formula[0])) {
 		processed_cell->value = atof(processed_cell->formula);
 		processed_cell->is_resolved = 1;
@@ -351,9 +358,9 @@ int calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper
 		}
 	}
 
-	printf("[INFO] calculate : Argument one is: %s.\n", argument_one);	
-	printf("[INFO] calculate : Argument two is: %s.\n", argument_two);	
-	printf("[INFO] calculate : Operator is    : %c.\n", operator);	
+	//printf("[INFO] calculate : Argument one is: %s.\n", argument_one);	
+	//printf("[INFO] calculate : Argument two is: %s.\n", argument_two);	
+	//printf("[INFO] calculate : Operator is    : %c.\n", operator);	
 
 
 	//// Geting arg col and arg row separately
@@ -364,18 +371,18 @@ int calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper
 	
 	int just_a_number_flag = 0;
 
-	printf("[INFO] calculate : arg one letters before %s\n", argument_one_letters);
-	printf("[INFO] calculate : arg one numbers before %s\n", argument_one_numbers);
+	//printf("[INFO] calculate : arg one letters before %s\n", argument_one_letters);
+	//printf("[INFO] calculate : arg one numbers before %s\n", argument_one_numbers);
 	geting_row_and_col_separately(&just_a_number_flag, argument_one_letters, argument_one_numbers, argument_one);	
-	printf("[INFO] calculate : arg one letters after%s\n", argument_one_letters);
-	printf("[INFO] calculate : arg one numbers after%s\n", argument_one_numbers);
+	//printf("[INFO] calculate : arg one letters after%s\n", argument_one_letters);
+	//printf("[INFO] calculate : arg one numbers after%s\n", argument_one_numbers);
 
 	if (just_a_number_flag) {
-		printf("IT IS JUST A NUMBER!!!\n");
+		//printf("IT IS JUST A NUMBER!!!\n");
 		argument_one_value = (double)atoi(argument_one_numbers);
 	} else {
 		Cell *target_cell = find_cell(argument_one_letters, argument_one_numbers, cols, rows, grid);
-		printf("[INFO] calculate/founded_cell : target_cell (%s%s) formula is : %s.\n", argument_one_letters, argument_one_numbers, target_cell->formula);	
+		//printf("[INFO] calculate/founded_cell : target_cell (%s%s) formula is : %s.\n", argument_one_letters, argument_one_numbers, target_cell->formula);	
 		if (target_cell->is_resolved) {
 			argument_one_value = target_cell->value;
 		} else {
@@ -394,7 +401,7 @@ int calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper
 		argument_two_value = (double)atoi(argument_two_numbers);
 	} else {
 		Cell *target_cell = find_cell(argument_two_letters, argument_two_numbers, cols, rows, grid);
-		printf("[INFO] calculate/founded_cell : target_cell (%s%s) formula is : %s.\n",argument_two_letters, argument_two_numbers, target_cell->formula);	
+		//printf("[INFO] calculate/founded_cell : target_cell (%s%s) formula is : %s.\n",argument_two_letters, argument_two_numbers, target_cell->formula);	
 		if (target_cell->is_resolved) {
 			argument_two_value = target_cell->value;
 		} else {
@@ -406,55 +413,55 @@ int calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper
 
 	// Now computation of the value
 	
-	printf("\n||||||||\n");
-	printf("[INFO] calculate : argument_one_value %f.\n", argument_one_value);
-	printf("[INFO] calculate : argument_two_value %f.\n", argument_two_value);
+	//printf("\n||||||||\n");
+	//printf("[INFO] calculate : argument_one_value %f.\n", argument_one_value);
+	//printf("[INFO] calculate : argument_two_value %f.\n", argument_two_value);
 	switch (operator) {
-		case '+': processed_cell->value = argument_one_value + argument_two_value; printf("+\n"); break;
-		case '-': processed_cell->value = argument_one_value - argument_two_value; printf("-\n"); break;
-		case '*': processed_cell->value = argument_one_value * argument_two_value; printf("*\n"); break;
-		case '/': processed_cell->value = argument_one_value / argument_two_value; printf("/\n"); break;
+		case '+': processed_cell->value = argument_one_value + argument_two_value; /*printf("+\n");*/ break;
+		case '-': processed_cell->value = argument_one_value - argument_two_value; /*printf("-\n");*/ break;
+		case '*': processed_cell->value = argument_one_value * argument_two_value; /*printf("*\n");*/ break;
+		case '/': processed_cell->value = argument_one_value / argument_two_value; /*printf("/\n");*/ break;
 		default: printf("[FAULT] calculate : Operator is bad.\n");
 	
 	}
 	processed_cell->is_resolved = 1;
-	printf("[INFO] calculate : processed_cell value %f.\n", processed_cell->value);
-	printf("\n||||||||\n");
-	printf("\n[INFO] calculate : %s %s %s.\n", &argument_one, &operator, &argument_two);
+	//printf("[INFO] calculate : processed_cell value %f.\n", processed_cell->value);
+	//printf("\n||||||||\n");
+	//printf("\n[INFO] calculate : %s %s %s.\n", &argument_one, &operator, &argument_two);
 	
 	return 0;
 }
 
 int geting_row_and_col_separately(int *just_a_number_flag, char *argument_letters, char *argument_numbers, char *argument) {	
-	printf("[INFO] geting_row_and_col_separately : Entered into GR&CS with a_l:%s.\n", argument_letters);	
-	printf("[INFO] geting_row_and_col_separately : Entered into GR&CS with a_n:%s.\n", argument_numbers);	
-	printf("[INFO] geting_row_and_col_separately : Entered into GR&CS with a  :%s.\n", argument);	
+	//printf("[INFO] geting_row_and_col_separately : Entered into GR&CS with a_l:%s.\n", argument_letters);	
+	//printf("[INFO] geting_row_and_col_separately : Entered into GR&CS with a_n:%s.\n", argument_numbers);	
+	//printf("[INFO] geting_row_and_col_separately : Entered into GR&CS with a  :%s.\n", argument);	
 	int windex_let = 0;
 	int windex_num = 0;
 	for (int i = 0; argument[i] != '\0'; i++) {
-	        printf("[INFO] geting_row_and_col_separately/cycle : Step %d.\n", i);	
+	        //printf("[INFO] geting_row_and_col_separately/cycle : Step %d.\n", i);	
 		// In this realisation numbers are not allowed in columns names	
-	        printf("[INFO] geting_row_and_col_separately/cycle : Literal on the Step %c.\n", argument[i]);	
+	        //printf("[INFO] geting_row_and_col_separately/cycle : Literal on the Step %c.\n", argument[i]);	
 		if (isdigit(argument[i])) {
 			if (i == 0) {
-			        printf("1\n");
-				printf("%d\n", *just_a_number_flag);
+			        //printf("1\n");
+				//printf("%d\n", *just_a_number_flag);
 				*just_a_number_flag++;
-				printf("%d\n", *just_a_number_flag);
+				//printf("%d\n", *just_a_number_flag);
 				argument_numbers[windex_num] = argument[i];
 				windex_num++;
 			} else {
-			        printf("2\n");
+			        //printf("2\n");
 				argument_numbers[windex_num] = argument[i];
 				windex_num++;
 			}
 		} else {
 			if (windex_num == 0) {
-			        printf("3\n");
+			        //printf("3\n");
 				argument_letters[windex_let] = argument[i];
 				windex_let++;
 			} else {
-			        printf("4\n");
+			        //printf("4\n");
 				break;
 			}
 		}
@@ -463,8 +470,8 @@ int geting_row_and_col_separately(int *just_a_number_flag, char *argument_letter
 	argument_letters[windex_let] = '\0';
 	argument_numbers[windex_num] = '\0';
 
-	printf("[INFO] geting_row_and_col_separately : argument_letters %s.\n", argument_letters);	
-	printf("[INFO] geting_row_and_col_separately : argument_numbers %s.\n", argument_numbers);		
+	//printf("[INFO] geting_row_and_col_separately : argument_letters %s.\n", argument_letters);	
+	//printf("[INFO] geting_row_and_col_separately : argument_numbers %s.\n", argument_numbers);		
 	
 	return 0;
 }

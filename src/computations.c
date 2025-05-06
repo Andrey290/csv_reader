@@ -26,12 +26,13 @@ int print_grid(Cell **grid, ColumnsKeeper *cols, RowsKeeper *rows) {
 				printf("%.2f,", grid[i][j].value);
 			} else {
 				//printf("[INFO] print_grid : if(!calculate(&grid[%d][%d], grid, cols, rows)).\n", i, j);
-				if(!calculate(&grid[i][j], grid, cols, rows)) {
+				int calc_error = calculate(&grid[i][j], grid, cols, rows);
+				if(!calc_error) {
 					printf("%.2f,", grid[i][j].value);
-				} else {
+				} else if (calc_error == 680){  // DIVISION BY ZERO
 					grid[i][j].value = NAN; // Not A Number is mean
 					grid[i][j].is_resolved = 1;
-					printf("NAN,");
+					printf("ERROR,");
 				}
 			}
 		}
@@ -157,7 +158,17 @@ int calculate(Cell *processed_cell, Cell **grid, ColumnsKeeper *cols, RowsKeeper
 		case '+': processed_cell->value = argument_one_value + argument_two_value; /*printf("+\n");*/ break;
 		case '-': processed_cell->value = argument_one_value - argument_two_value; /*printf("-\n");*/ break;
 		case '*': processed_cell->value = argument_one_value * argument_two_value; /*printf("*\n");*/ break;
-		case '/': processed_cell->value = argument_one_value / argument_two_value; /*printf("/\n");*/ break;
+		case '/': 
+			  if (fabs(argument_two_value) < DIV_ZERO_EPS) {
+				  //printf("[FAULT] calculate : Operator is bad.\n")
+				  processed_cell->value = NAN;
+				  processed_cell->is_resolved = 1;
+				  return 680; // 6 - division, 8 - by, 0 - zero
+			  }
+		          processed_cell->value = argument_one_value / argument_two_value;
+			  /*printf("/\n");*/
+			  
+			  break;
 		default: printf("[FAULT] calculate : Operator is bad.\n");
 	
 	}

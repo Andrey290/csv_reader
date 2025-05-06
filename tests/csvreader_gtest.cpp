@@ -43,10 +43,10 @@ TEST(CsvReaderTest, BasicExample) {
         "30,0,=B1+A1,5\n";
 
     std::string expected =
-        ",A,B,Cell\n"
-        "1,1,0,1\n"
-        "2,2,6,0\n"
-        "30,0,1,5\n";
+        ",A,B,Cell,\n"
+        "1,1.00,0.00,1.00,\n"
+        "2,2.00,6.00,0.00,\n"
+        "30,0.00,1.00,5.00,\n";
 
     EXPECT_EQ(RunCsvReader(input), expected);
 }
@@ -57,10 +57,17 @@ TEST(CsvReaderTest, DivisionByZero) {
         ",X,Y\n"
         "1,10,=X1-10\n"
         "2,5,=X1-10/0\n"; // второй рядка имеет деление на ноль
+    
+    std::string expected =
+        ",X,Y,\n"
+        "1,10.00,0.00,\n"
+        "2,5.00,ERROR,\n";
 
-    std::string output = RunCsvReader(input);
+    EXPECT_EQ(RunCsvReader(input), expected);
+
+    //std::string output = RunCsvReader(input);
     // в ячейке с делением на ноль ожидаем ERROR
-    EXPECT_NE(output.find("ERROR"), std::string::npos);
+    //EXPECT_NE(output.find("ERROR"), std::string::npos);
 }
 
 // Тест 3: неверная ссылка на столбец
